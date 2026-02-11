@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature and Humidity Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Main container -->
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Temperature and Humidity Monitor </h1>
+
+        <!-- Current readings cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-center" id="temp-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Temperature</h5>
+                        <h2 id="temperature">--</h2>
+                        <p>°F</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Humidity</h5>
+                        <h2 id="humidity">--</h2>
+                        <p>%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart for historical readings -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <canvas id="tempChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts at bottom -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Fetch latest reading and update display
+        function updateLatest() {
+            fetch('/api/latest')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('temperature').textContent = data.temperature.toFixed(2);
+                    document.getElementById('humidity').textContent = data.humidity.toFixed(2);
+
+                    // Change card color if temperature is high
+                    let tempCard = document.getElementById('temp-card');
+                    if (data.temperature > 80) {
+                        tempCard.style.backgroundColor = 'red';
+                    } else {
+                        tempCard.style.backgroundColor = '';
+                    }
+                });
+        }
+
+        // Fetch last 100 readings and draw chart
+        function loadChart() {
+            fetch('/api/readings')
+                .then(response => response.json())
+                .then(data => {
+                    data.reverse();
+
+                    let labels = data.map(r => r.timestamp);
+                    let temps = data.map(r => r.temperature);
+                    let humidity = data.map(r => r.humidity);
+
+                    new Chart(document.getElementById('tempChart'), {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Temperature (°F)',
+                                    data: temps,
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Humidity (%)',
+                                    data: humidity,
+                                    borderColor: 'rgb(54, 162, 235)',
+                                    tension: 0.1
+                                }
+                            ]
+                        }
+                    });
+                });
+        }
+
+        // Run on page load
+        updateLatest();
+        setInterval(updateLatest, 5000);
+        loadChart();
+    </script>
+</body>
+</html>

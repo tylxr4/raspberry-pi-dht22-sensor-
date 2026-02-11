@@ -1,11 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 import sqlite3
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Flask is working!"
+    return render_template('index.html')
 
 @app.route('/api/latest')
 def get_latest():
