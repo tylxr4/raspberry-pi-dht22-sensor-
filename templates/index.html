@@ -152,19 +152,26 @@
                     });
                 });
         }
+        let lastAlertTime = {};
+        const COOLDOWN_MS = 300000; // 5 minutes
+
         function logAlert(alertType, message, value) {
-            fetch('/api/alert', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    alert_type: alertType,
-                    message: message,
-                    value: value
-                })
-            });
+            const now = Date.now();
+            if (lastAlertTime[alertType] &&
+                now - lastAlertTime[alertType] < COOLDOWN_MS) {
+                return;
         }
+        lastAlertTime[alertType] = now;
+        fetch('/api/alert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                alert_type: alertType,
+                message: message,
+                value: value
+            })
+        });
+    }
 
         // Load and display alert history
         function loadAlertHistory() {
