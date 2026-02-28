@@ -179,23 +179,30 @@
                 .then(response => response.json())
                 .then(data => {
                     let historyDiv = document.getElementById('alert-history');
+                    historyDiv.innerHTML = '';
 
-                    if (data.length === 0) {
-                        historyDiv.innerHTML = '<p class="text-muted">No alerts recorded yet.</p>';
-                    } else {
-                        let html = '<ul class="list-group">';
-                        data.forEach(alert => {
-                            html += `
-                        <li class="list-group-item bg-dark text-light border-secondary">
-                            <strong>${alert.timestamp}</strong> - ${alert.message}
-                        </li>
-                    `;
-                        });
-                        html += '</ul>';
-                        historyDiv.innerHTML = html;
-                    }
+            if (data.length === 0) {
+                let p = document.createElement('p');
+                p.className = 'text-muted';
+                p.textContent = 'No alerts recorded yet.';
+                historyDiv.appendChild(p);
+            } else {
+                let ul = document.createElement('ul');
+                ul.className = 'list-group';
+                data.forEach(alert => {
+                    let li = document.createElement('li');
+                    li.className = 'list-group-item bg-dark text-light border-secondary';
+                    let strong = document.createElement('strong');
+                    strong.textContent = alert.timestamp;
+                    li.appendChild(strong);
+                    li.appendChild(document.createTextNode(' - ' + alert.message));
+                    ul.appendChild(li);
                 });
-        }
+                historyDiv.appendChild(ul);
+            }
+        });
+}
+
         // Run on page load
         updateLatest();
         setInterval(updateLatest, 5000);
